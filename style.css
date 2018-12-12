@@ -65,6 +65,7 @@ body {
   border-right: 1px solid #000;
   display: table-cell;
   font-size: 20px;
+  font-weight: bold;
   height: 24px;
   width: 24px;
   text-align: center;
