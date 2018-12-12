@@ -75,8 +75,12 @@ class Board {
       for (let tile of row) {
         let tileDiv;
         if (tile.isRevealed) {
-          tileDiv = createDiv('tile');
-          tileDiv.innerText = tile.adjacentMines || '';
+          if (tile.adjacentMines > 0) {
+            tileDiv = createDiv('tile', `m${tile.adjacentMines}`);
+            tileDiv.innerText = tile.adjacentMines;
+          } else {
+            tileDiv = createDiv('tile');
+          }
         } else {
           tileDiv = createDiv('tile', 'concealed');
           tileDiv.innerText = tile.isFlagged ? 'F' : '';

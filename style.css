@@ -71,6 +71,38 @@ body {
   vertical-align: middle;
 }
 
+.tile.m1 {
+  color: #00d;
+}
+
+.tile.m2 {
+  color: #0b0;
+}
+
+.tile.m3 {
+  color: #d00;
+}
+
+.tile.m4 {
+  color: #d0d;
+}
+
+.tile.m5 {
+  color: #009;
+}
+
+.tile.m6 {
+  color: #080;
+}
+
+.tile.m7 {
+  color: #900;
+}
+
+.tile.m8 {
+  color: #909;
+}
+
 .tile.concealed {
   background-color: #bbb;
   cursor: pointer;
