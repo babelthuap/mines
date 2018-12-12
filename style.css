@@ -89,19 +89,19 @@ body {
 }
 
 .tile.m5 {
-  color: #009;
+  color: #da0;
 }
 
 .tile.m6 {
-  color: #080;
+  color: #009;
 }
 
 .tile.m7 {
-  color: #900;
+  color: #080;
 }
 
 .tile.m8 {
-  color: #909;
+  color: #900;
 }
 
 .tile.concealed {
