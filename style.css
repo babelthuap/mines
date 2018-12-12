@@ -1,0 +1,81 @@
+body {
+  background-color: #19e;
+  color: #fff;
+  font-family: Courier, monospace;
+}
+
+#controls {
+  font-size: 16px;
+  margin: auto;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+#controls input {
+  font-size: 16px;
+}
+
+#restart {
+  background-color: #000;
+  color: #fff;
+  cursor: pointer;
+  font-family: Courier, monospace;
+  font-size: 20px;
+  margin: 0 24px;
+}
+
+.boom, .winner {
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 30px;
+  font-size: 80px;
+  font-weight: bold;
+  padding: 32px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.boom {
+  border: 30px solid rgba(255, 0, 0, 0.3);
+  color: red;
+}
+
+.winner {
+  border: 30px solid rgba(0, 255, 0, 0.3);
+  color: green;
+}
+
+#board {
+  border: 4px solid #777;
+  color: #000;
+  display: table;
+  margin: auto;
+  position: relative;
+  user-select: none;
+}
+
+.row {
+  display: table-row;
+}
+
+.tile {
+  background-color: #fff;
+  border-bottom: 1px solid #000;
+  border-right: 1px solid #000;
+  display: table-cell;
+  font-size: 20px;
+  height: 24px;
+  width: 24px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.tile.concealed {
+  background-color: #bbb;
+  cursor: pointer;
+}
+
+.tile.concealed:hover {
+  background-color: #aaa;
+}
