@@ -345,17 +345,14 @@ function handleReveal(event) {
   }
 }
 
-// Handle right click
+// Disable context menu (so we can intercept right click)
 BOARD_EL.addEventListener('contextmenu', event => {
   event.preventDefault();
-  if (gameInProgress) {
-    handleFlag(event);
-  }
   return false;
 });
 
 // Handle other kinds of click
-BOARD_EL.addEventListener('click', event => {
+BOARD_EL.addEventListener('mousedown', event => {
   if (!gameInProgress) {
     window.requestAnimationFrame(() => {
       BOOM.remove();
@@ -363,7 +360,7 @@ BOARD_EL.addEventListener('click', event => {
     });
     return;
   }
-  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+  if (event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey) {
     handleFlag(event);
   } else {
     handleReveal(event);
