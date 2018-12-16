@@ -1,5 +1,5 @@
-import MinesweeperBoard from '/js/MinesweeperBoard.js';
-import {createDiv, getLocation} from '/js/util.js';
+import MinesweeperBoard from './js/MinesweeperBoard.js';
+import {createDiv, getLocation} from './js/util.js';
 
 (() => {
 
