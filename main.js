@@ -95,8 +95,12 @@ function ai(recurse = true) {
 }
 
 window.addEventListener('keydown', event => {
-  if (gameInProgress && event.keyCode == 65 /* 'a' */) {
-    ai();
+  if (gameInProgress) {
+    if (event.keyCode === 65 /* 'a' */) {
+      ai();
+    } else if (event.keyCode === 82 /* 'r' */) {
+      start();
+    }
   }
 });
 
