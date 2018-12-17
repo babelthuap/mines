@@ -1,4 +1,4 @@
-import {createDiv, rand, shuffle} from './util.js';
+import {createDiv, modifyDom, rand, shuffle} from './util.js';
 
 // A single tile
 class Tile {
@@ -94,7 +94,7 @@ export default class MinesweeperBoard {
   }
 
   updateCounters() {
-    window.requestAnimationFrame(() => {
+    return modifyDom(() => {
       this.FLAGS_EL.innerText = this.numFlags_;
       this.MINES_EL.innerText = this.numMines_;
     });
@@ -102,20 +102,17 @@ export default class MinesweeperBoard {
 
   // Associates each tile in the grid with a DOM node
   mapGridToDom_() {
-    return new Promise(resolve => {
-      window.requestAnimationFrame(() => {
-        [...this.BOARD_EL.children].forEach(child => child.remove());
-        for (let row of this.grid_) {
-          let rowDiv = createDiv('row');
-          for (let tile of row) {
-            let tileDiv = createDiv('tile', 'concealed');
-            tile.domNode = tileDiv;
-            rowDiv.appendChild(tileDiv);
-          }
-          this.BOARD_EL.appendChild(rowDiv);
+    return modifyDom(() => {
+      [...this.BOARD_EL.children].forEach(child => child.remove());
+      for (let row of this.grid_) {
+        let rowDiv = createDiv('row');
+        for (let tile of row) {
+          let tileDiv = createDiv('tile', 'concealed');
+          tile.domNode = tileDiv;
+          rowDiv.appendChild(tileDiv);
         }
-        resolve();
-      });
+        this.BOARD_EL.appendChild(rowDiv);
+      }
     });
   }
 
@@ -125,7 +122,7 @@ export default class MinesweeperBoard {
     let width = this.getWidth();
     let numTiles = height * width;
     this.numMines_ = Math.floor(density * numTiles);
-    this.updateCounters()
+    this.updateCounters();
     this.tilesLeftToReveal_ = numTiles - this.numMines_;
     // Shuffle 1D array to determine mine positions
     let minePositions = new Array(numTiles).fill(false);
@@ -181,7 +178,7 @@ export default class MinesweeperBoard {
 
   // Re-renders the entire board
   render_(revealMines) {
-    window.requestAnimationFrame(() => {
+    return modifyDom(() => {
       for (let row of this.grid_) {
         for (let tile of row) {
           tile.render(revealMines);
@@ -193,7 +190,7 @@ export default class MinesweeperBoard {
 
   // Re-renders only the specified locations
   update_(locations) {
-    window.requestAnimationFrame(() => {
+    return modifyDom(() => {
       for (let [y, x] of locations) {
         this.grid_[y][x].render();
       }

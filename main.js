@@ -1,5 +1,5 @@
 import MinesweeperBoard from './js/MinesweeperBoard.js';
-import {createDiv, getLocation} from './js/util.js';
+import {createDiv, getLocation, modifyDom} from './js/util.js';
 
 (() => {
 
@@ -76,7 +76,7 @@ function handleReveal(event) {
   isFirstMove = false;
   if (gameOver) {
     gameInProgress = false;
-    window.requestAnimationFrame(() => {
+    modifyDom(() => {
       BOARD_EL.appendChild(win ? WINNER : BOOM);
     });
     delete localStorage.minesweeperBoard;
@@ -97,7 +97,7 @@ BOARD_EL.addEventListener('contextmenu', event => {
 // Handle other kinds of click
 BOARD_EL.addEventListener('mousedown', event => {
   if (!gameInProgress) {
-    window.requestAnimationFrame(() => {
+    modifyDom(() => {
       BOOM.remove();
       WINNER.remove();
     });

@@ -17,6 +17,15 @@ function getElementIndex(element) {
   return [...element.parentNode.children].indexOf(element);
 }
 
+// Executes a function in sync with browser repaints, then resolves
+export function modifyDom(fn) {
+  return new Promise(resolve => {
+    window.requestAnimationFrame(timestamp => {
+      Promise.resolve(fn(timestamp)).then(resolve);
+    });
+  });
+}
+
 // Gets random int in [0, n]
 export function rand(n) {
   return Math.floor((n + 1) * Math.random());
