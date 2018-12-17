@@ -313,6 +313,7 @@ export default class MinesweeperBoard {
     for (let location of flaggableLocations) {
       this.flag(location.split(','));
     }
+    return flaggableLocations.size;
   }
 
   aiFindSaturatedLocations() {

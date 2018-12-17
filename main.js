@@ -71,21 +71,32 @@ window.addEventListener('resize', handleResize);
 
 /* SPOOKY AI SHIT */
 
-let aiRevealMode = false; // Start in 'flag' mode
+let aiRevealMode = true;
+
+function ai(recurse = true) {
+  aiRevealMode = !aiRevealMode;
+  if (aiRevealMode) {
+    let saturatedLocations = board.aiFindSaturatedLocations();
+    for (let location of saturatedLocations) {
+      let gameOver = handleReveal(location);
+      if (gameOver) {
+        return;
+      }
+    }
+    if (saturatedLocations.length === 0 && recurse) {
+      ai(/* recurse= */ false);
+    }
+  } else {
+    let numFlagged = board.aiFlagLocations();
+    if (numFlagged.length === 0 && recurse) {
+      ai(/* recurse= */ false);
+    }
+  }
+}
+
 window.addEventListener('keydown', event => {
   if (gameInProgress && event.keyCode == 65 /* 'a' */) {
-    if (aiRevealMode) {
-      let saturatedLocations = board.aiFindSaturatedLocations();
-      for (let location of saturatedLocations) {
-        let gameOver = handleReveal(location);
-        if (gameOver) {
-          return;
-        }
-      }
-    } else {
-      board.aiFlagLocations();
-    }
-    aiRevealMode = !aiRevealMode;
+    ai();
   }
 });
 
