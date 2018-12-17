@@ -83,10 +83,16 @@ body {
   vertical-align: middle;
 }
 
-.sm .tile {
+.xs .tile {
   font-size: 10px;
   height: 12px;
   width: 12px;
+}
+
+.sm .tile {
+  font-size: 15px;
+  height: 18px;
+  width: 18px;
 }
 
 .md .tile {
