@@ -1,5 +1,10 @@
 import {createDiv, modifyDom, rand, shuffle} from './util.js';
 
+// Bit flags
+const HAS_MINE = 0b1;
+const IS_FLAGGED = 0b10;
+const IS_REVEALED = 0b100;
+
 // A single tile
 class Tile {
   constructor() {
@@ -34,22 +39,16 @@ class Tile {
   }
 
   serialize() {
-    let objectRepresentation = {
-      adjacentMines: this.adjacentMines,
-      hasMine: this.hasMine,
-      isFlagged: this.isFlagged,
-      isRevealed: this.isRevealed,
-    };
-    return JSON.stringify(objectRepresentation);
+    return (this.hasMine * HAS_MINE) +
+        (this.isFlagged * IS_FLAGGED) +
+        (this.isRevealed * IS_REVEALED);
   }
 
-  static deserialize(json) {
-    let parsedJson = JSON.parse(json);
+  static deserialize(bits) {
     let tile = new Tile();
-    tile.adjacentMines = parsedJson.adjacentMines;
-    tile.hasMine = parsedJson.hasMine;
-    tile.isFlagged = parsedJson.isFlagged;
-    tile.isRevealed = parsedJson.isRevealed;
+    tile.hasMine = Boolean(bits & HAS_MINE);
+    tile.isFlagged = Boolean(bits & IS_FLAGGED);
+    tile.isRevealed = Boolean(bits & IS_REVEALED);
     return tile;
   }
 }
@@ -282,24 +281,25 @@ export default class MinesweeperBoard {
   }
 
   serialize() {
-    let objectRepresentation = {
-      tilesLeftToReveal: this.tilesLeftToReveal_,
-      numMines: this.numMines_,
-      numFlags: this.numFlags_,
-      grid: this.grid_.map(row => row.map(tile => tile.serialize())),
-    };
-    return JSON.stringify(objectRepresentation);
+    let arr = [
+      this.tilesLeftToReveal_,
+      this.numMines_,
+      this.numFlags_,
+      this.grid_.map(row => row.map(tile => tile.serialize()).join('')),
+    ];
+    return JSON.stringify(arr);
   }
 
   static deserialize(json, elementRefs) {
-    let parsedJson = JSON.parse(json);
-    let height = parsedJson.grid.length;
-    let width = parsedJson.grid[0].length;
+    let [tilesLeftToReveal, numMines, numFlags, grid] = JSON.parse(json);
+    let height = grid.length;
+    let width = grid[0].length;
     let board = new MinesweeperBoard(height, width, elementRefs);
-    board.tilesLeftToReveal_ = parsedJson.tilesLeftToReveal;
-    board.numMines_ = parsedJson.numMines;
-    board.numFlags_ = parsedJson.numFlags;
-    board.grid_ = parsedJson.grid.map(row => row.map(json => Tile.deserialize(json)));
+    board.tilesLeftToReveal_ = tilesLeftToReveal;
+    board.numMines_ = numMines;
+    board.numFlags_ = numFlags;
+    board.grid_ = grid.map(row => row.split('').map(tile => Tile.deserialize(tile)));
+    board.labelTiles_();
     board.mapGridToDom_().then(() => board.render_());
     return board;
   }
