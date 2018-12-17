@@ -58,6 +58,34 @@ if (localStorage.minesweeperBoard) {
 }
 
 
+/* HANDLE WINDOW RESIZE */
+
+const BODY_MARGIN = 16;
+const MD_TILE_WIDTH = 25;
+const LG_TILE_WIDTH = 37;
+const XL_TILE_WIDTH = 49;
+
+function handleResize() {
+  let windowWidth = window.innerWidth;
+  let boardWidth = board.getWidth();
+  modifyDom(() => {
+    BOARD_EL.classList.remove('sm', 'md', 'lg', 'xl');
+    if (windowWidth <  MD_TILE_WIDTH * boardWidth + BODY_MARGIN) {
+      BOARD_EL.classList.add('sm');
+    } else if (windowWidth <  LG_TILE_WIDTH * boardWidth + BODY_MARGIN) {
+      BOARD_EL.classList.add('md');
+    } else if (windowWidth <  XL_TILE_WIDTH * boardWidth + BODY_MARGIN) {
+      BOARD_EL.classList.add('lg');
+    } else {
+      BOARD_EL.classList.add('xl');
+    }
+  });
+}
+
+window.addEventListener('resize', handleResize);
+handleResize();
+
+
 /* HANDLE PLAYER ACTIONS */
 
 // Player toggles the flag on a tile
