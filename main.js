@@ -21,8 +21,11 @@ let board, isFirstMove, gameInProgress;
 function start() {
   let height = parseInt(HEIGHT_INPUT.value);
   let width = parseInt(WIDTH_INPUT.value);
-  let density = parseInt(DENSITY_INPUT.value) / 100;
-  board = new MinesweeperBoard(height, width, density, BOARD_EL, FLAGS_EL, MINES_EL);
+  let density = parseInt(DENSITY_INPUT.value);
+  localStorage.minesweeperParams = JSON.stringify({height, width, density});
+  board = new MinesweeperBoard(height, width, {BOARD_EL, FLAGS_EL, MINES_EL});
+  board.init(density / 100);
+  delete localStorage.minesweeperBoard;
   isFirstMove = true;
   gameInProgress = true;
 }
@@ -38,7 +41,21 @@ DENSITY_INPUT.addEventListener('keypress', handleInputKeypress);
 HEIGHT_INPUT.addEventListener('keypress', handleInputKeypress);
 WIDTH_INPUT.addEventListener('keypress', handleInputKeypress);
 
-start();
+if (localStorage.minesweeperParams) {
+  let {height, width, density} = JSON.parse(localStorage.minesweeperParams);
+  HEIGHT_INPUT.value = height;
+  WIDTH_INPUT.value = width;
+  DENSITY_INPUT.value = density;
+}
+
+if (localStorage.minesweeperBoard) {
+  board = MinesweeperBoard.deserialize(
+      localStorage.minesweeperBoard, {BOARD_EL, FLAGS_EL, MINES_EL});
+  isFirstMove = false;
+  gameInProgress = true;
+} else {
+  start();
+}
 
 
 /* HANDLE PLAYER ACTIONS */
@@ -47,6 +64,9 @@ start();
 function handleFlag(event) {
   let location = getLocation(event.target);
   board.flag(location);
+  if (!isFirstMove) {
+    localStorage.minesweeperBoard = board.serialize();
+  }
 }
 
 // Player reveals a tile
@@ -59,6 +79,9 @@ function handleReveal(event) {
     window.requestAnimationFrame(() => {
       BOARD_EL.appendChild(win ? WINNER : BOOM);
     });
+    delete localStorage.minesweeperBoard;
+  } else {
+    localStorage.minesweeperBoard = board.serialize();
   }
 }
 

@@ -32,13 +32,33 @@ class Tile {
       }
     }
   }
+
+  serialize() {
+    let objectRepresentation = {
+      adjacentMines: this.adjacentMines,
+      hasMine: this.hasMine,
+      isFlagged: this.isFlagged,
+      isRevealed: this.isRevealed,
+    };
+    return JSON.stringify(objectRepresentation);
+  }
+
+  static deserialize(json) {
+    let parsedJson = JSON.parse(json);
+    let tile = new Tile();
+    tile.adjacentMines = parsedJson.adjacentMines;
+    tile.hasMine = parsedJson.hasMine;
+    tile.isFlagged = parsedJson.isFlagged;
+    tile.isRevealed = parsedJson.isRevealed;
+    return tile;
+  }
 }
 
 // The board
 export default class MinesweeperBoard {
-  constructor(height, width, density, BOARD_EL, FLAGS_EL, MINES_EL) {
-    if (height < 1 || width < 1 || density < 0 || density > 0.9) {
-      throw 'Bad height, width, or density';
+  constructor(height, width, {BOARD_EL, FLAGS_EL, MINES_EL}) {
+    if (height < 1 || width < 1) {
+      throw 'Bad height or width';
     }
 
     this.BOARD_EL = BOARD_EL;
@@ -48,9 +68,7 @@ export default class MinesweeperBoard {
     this.tilesLeftToReveal_ = null;
     this.numMines_ = 0;
     this.numFlags_ = 0;
-    window.requestAnimationFrame(() => {
-      this.FLAGS_EL.innerText = this.numFlags_;
-    });
+    this.updateCounters();
 
     this.grid_ = new Array(height);
     for (let y = 0; y < height; y++) {
@@ -59,37 +77,55 @@ export default class MinesweeperBoard {
         this.grid_[y][x] = new Tile();
       }
     }
+  }
 
+  init(density) {
     this.mapGridToDom_();
     this.placeMines_(density);
     this.labelTiles_();
   }
 
+  getHeight() {
+    return this.grid_.length;
+  }
+
+  getWidth() {
+    return this.grid_[0].length;
+  }
+
+  updateCounters() {
+    window.requestAnimationFrame(() => {
+      this.FLAGS_EL.innerText = this.numFlags_;
+      this.MINES_EL.innerText = this.numMines_;
+    });
+  }
+
   // Associates each tile in the grid with a DOM node
   mapGridToDom_() {
-    window.requestAnimationFrame(() => {
-      [...this.BOARD_EL.children].forEach(child => child.remove());
-      for (let row of this.grid_) {
-        let rowDiv = createDiv('row');
-        for (let tile of row) {
-          let tileDiv = createDiv('tile', 'concealed');
-          tile.domNode = tileDiv;
-          rowDiv.appendChild(tileDiv);
+    return new Promise(resolve => {
+      window.requestAnimationFrame(() => {
+        [...this.BOARD_EL.children].forEach(child => child.remove());
+        for (let row of this.grid_) {
+          let rowDiv = createDiv('row');
+          for (let tile of row) {
+            let tileDiv = createDiv('tile', 'concealed');
+            tile.domNode = tileDiv;
+            rowDiv.appendChild(tileDiv);
+          }
+          this.BOARD_EL.appendChild(rowDiv);
         }
-        this.BOARD_EL.appendChild(rowDiv);
-      }
+        resolve();
+      });
     });
   }
 
   // Randomly places mines on the board
   placeMines_(density) {
-    let height = this.grid_.length;
-    let width = this.grid_[0].length;
+    let height = this.getHeight();
+    let width = this.getWidth();
     let numTiles = height * width;
     this.numMines_ = Math.floor(density * numTiles);
-    window.requestAnimationFrame(() => {
-      this.MINES_EL.innerText = this.numMines_;
-    });
+    this.updateCounters()
     this.tilesLeftToReveal_ = numTiles - this.numMines_;
     // Shuffle 1D array to determine mine positions
     let minePositions = new Array(numTiles).fill(false);
@@ -107,8 +143,8 @@ export default class MinesweeperBoard {
 
   // Calculates the number of adjacent mines for each tile
   labelTiles_() {
-    let height = this.grid_.length;
-    let width = this.grid_[0].length;
+    let height = this.getHeight();
+    let width = this.getWidth();
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         if (this.grid_[y][x].hasMine) {
@@ -143,15 +179,15 @@ export default class MinesweeperBoard {
     }
   }
 
-  // Re-renders the board with all mines revealed
-  revealMines_() {
+  // Re-renders the entire board
+  render_(revealMines) {
     window.requestAnimationFrame(() => {
       for (let row of this.grid_) {
         for (let tile of row) {
-          tile.render(/* revealMines= */ true);
+          tile.render(revealMines);
         }
       }
-      this.FLAGS_EL.innerText = this.numFlags_;
+      this.updateCounters();
     });
   }
 
@@ -161,7 +197,7 @@ export default class MinesweeperBoard {
       for (let [y, x] of locations) {
         this.grid_[y][x].render();
       }
-      this.FLAGS_EL.innerText = this.numFlags_;
+      this.updateCounters();
     });
   }
 
@@ -191,9 +227,9 @@ export default class MinesweeperBoard {
 
   // Swaps the mine in the given tile with a randomly selected open tile and updates the tile labels accordingly.
   swapMine_(originalY, originalX) {
-    let numOpenTiles = (this.grid_.length * this.grid_[0].length) - this.numMines_;
+    let numOpenTiles = (this.getHeight() * this.getWidth()) - this.numMines_;
     let indexToSwap = rand(numOpenTiles - 1);
-    for (let y = 0; y < this.grid_.length; y++) {
+    for (let y = 0; y < this.getHeight(); y++) {
       for (let x = 0; x < this.grid_[y].length; x++) {
         let tile = this.grid_[y][x];
         if (!tile.hasMine) {
@@ -237,7 +273,7 @@ export default class MinesweeperBoard {
       } else {
         // BOOM
         tile.isRevealed = true;
-        this.revealMines_();
+        this.render_(/* revealMines= */ true);
         return {gameOver: true, win: false};
       }
     }
@@ -246,5 +282,28 @@ export default class MinesweeperBoard {
     this.update_(updatedLocations);
     let isWinner = this.tilesLeftToReveal_ === 0;
     return {gameOver: isWinner, win: isWinner};
+  }
+
+  serialize() {
+    let objectRepresentation = {
+      tilesLeftToReveal: this.tilesLeftToReveal_,
+      numMines: this.numMines_,
+      numFlags: this.numFlags_,
+      grid: this.grid_.map(row => row.map(tile => tile.serialize())),
+    };
+    return JSON.stringify(objectRepresentation);
+  }
+
+  static deserialize(json, elementRefs) {
+    let parsedJson = JSON.parse(json);
+    let height = parsedJson.grid.length;
+    let width = parsedJson.grid[0].length;
+    let board = new MinesweeperBoard(height, width, elementRefs);
+    board.tilesLeftToReveal_ = parsedJson.tilesLeftToReveal;
+    board.numMines_ = parsedJson.numMines;
+    board.numFlags_ = parsedJson.numFlags;
+    board.grid_ = parsedJson.grid.map(row => row.map(json => Tile.deserialize(json)));
+    board.mapGridToDom_().then(() => board.render_());
+    return board;
   }
 }
