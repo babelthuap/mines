@@ -28,6 +28,7 @@ function start() {
   delete localStorage.minesweeperBoard;
   isFirstMove = true;
   gameInProgress = true;
+  handleResize();
 }
 
 function handleInputKeypress(event) {
@@ -53,6 +54,7 @@ if (localStorage.minesweeperBoard) {
       localStorage.minesweeperBoard, {BOARD_EL, FLAGS_EL, MINES_EL});
   isFirstMove = false;
   gameInProgress = true;
+  handleResize();
 } else {
   start();
 }
