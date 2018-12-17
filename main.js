@@ -69,11 +69,31 @@ function handleResize() {
 window.addEventListener('resize', handleResize);
 
 
+/* SPOOKY AI SHIT */
+
+let aiRevealMode = false; // Start in 'flag' mode
+window.addEventListener('keydown', event => {
+  if (gameInProgress && event.keyCode == 65 /* 'a' */) {
+    if (aiRevealMode) {
+      let saturatedLocations = board.aiFindSaturatedLocations();
+      for (let location of saturatedLocations) {
+        let gameOver = handleReveal(location);
+        if (gameOver) {
+          return;
+        }
+      }
+    } else {
+      board.aiFlagLocations();
+    }
+    aiRevealMode = !aiRevealMode;
+  }
+});
+
+
 /* HANDLE PLAYER ACTIONS */
 
 // Player toggles the flag on a tile
-function handleFlag(event) {
-  let location = getLocation(event.target);
+function handleFlag(location) {
   board.flag(location);
   if (!isFirstMove) {
     localStorage.minesweeperBoard = board.serialize();
@@ -81,8 +101,7 @@ function handleFlag(event) {
 }
 
 // Player reveals a tile
-function handleReveal(event) {
-  let location = getLocation(event.target);
+function handleReveal(location) {
   let {gameOver, win} = board.reveal(location, isFirstMove);
   isFirstMove = false;
   if (gameOver) {
@@ -94,13 +113,15 @@ function handleReveal(event) {
   } else {
     localStorage.minesweeperBoard = board.serialize();
   }
+  return gameOver;
 }
 
 // Disable context menu (so we can intercept right click)
 BOARD_EL.addEventListener('contextmenu', event => {
   event.preventDefault();
   if (gameInProgress) {
-    handleFlag(event);
+    let location = getLocation(event.target);
+    handleFlag(location);
   }
   return false;
 });
@@ -115,10 +136,11 @@ BOARD_EL.addEventListener('mousedown', event => {
     return;
   }
   if (event.button === 0) {
+    let location = getLocation(event.target);
     if (event.altKey || event.ctrlKey || event.metaKey) {
-      handleFlag(event);
+      handleFlag(location);
     } else {
-      handleReveal(event);
+      handleReveal(location);
     }
   }
 });

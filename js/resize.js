@@ -8,7 +8,6 @@ const LG_TILE = 37;
 const XL_TILE = 49;
 
 export default function resize(board, BOARD_EL) {
-  console.log('resize');
   let windowWidth = window.innerWidth;
   let windowHeight = window.innerHeight;
   let boardWidth = board.getWidth();

@@ -257,9 +257,10 @@ export default class MinesweeperBoard {
   }
 
   // Handles all logic for revealing a tile
-  reveal([y, x], isFirstMove) {
+  reveal([y, x], isFirstMove = false) {
     let tile = this.grid_[y][x];
     if (tile.isRevealed || tile.isFlagged) {
+      // No can reveal
       return {gameOver: false};
     }
     if (tile.hasMine) {
@@ -278,6 +279,66 @@ export default class MinesweeperBoard {
     this.update_(updatedLocations);
     let isWinner = this.tilesLeftToReveal_ === 0;
     return {gameOver: isWinner, win: isWinner};
+  }
+
+  aiFlagLocations() {
+    let flaggableLocations = new Set();
+    for (let y = 0; y < this.getHeight(); y++) {
+      for (let x = 0; x < this.getWidth(); x++) {
+        let tile = this.grid_[y][x];
+        if (tile.isRevealed && tile.adjacentMines > 0) {
+          let adjacentFlags = 0;
+          let adjacentUnknown = 0;
+          this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
+            let neighbor = this.grid_[nbrY][nbrX];
+            if (!neighbor.isRevealed) {
+              if (neighbor.isFlagged) {
+                adjacentFlags++;
+              } else {
+                adjacentUnknown++;
+              }
+            }
+          });
+          if (adjacentFlags + adjacentUnknown === tile.adjacentMines) {
+            this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
+              let neighbor = this.grid_[nbrY][nbrX];
+              if (!neighbor.isRevealed && !neighbor.isFlagged) {
+                flaggableLocations.add(`${nbrY},${nbrX}`);
+              }
+            });
+          }
+        }
+      }
+    }
+    for (let location of flaggableLocations) {
+      this.flag(location.split(','));
+    }
+  }
+
+  aiFindSaturatedLocations() {
+    let saturatedLocations = [];
+    for (let y = 0; y < this.getHeight(); y++) {
+      for (let x = 0; x < this.getWidth(); x++) {
+        let tile = this.grid_[y][x];
+        if (tile.isRevealed && tile.adjacentMines > 0) {
+          let adjacentFlags = 0;
+          this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
+            if (this.grid_[nbrY][nbrX].isFlagged) {
+              adjacentFlags++;
+            }
+          });
+          if (tile.adjacentMines === adjacentFlags) {
+            this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
+              let neighbor = this.grid_[nbrY][nbrX];
+              if (!neighbor.isRevealed && !neighbor.isFlagged) {
+                saturatedLocations.push([nbrY, nbrX]);
+              }
+            });
+          }
+        }
+      }
+    }
+    return saturatedLocations;
   }
 
   serialize() {
