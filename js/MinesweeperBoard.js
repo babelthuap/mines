@@ -1,18 +1,18 @@
 import {asCoordinates, asLocation, createDiv, modifyDom, rand, shuffle} from './util.js';
 
 // Bit flags
-const HAS_MINE = 0b1;
-const IS_FLAGGED = 0b10;
+const HAS_MINE    = 0b001;
+const IS_FLAGGED  = 0b010;
 const IS_REVEALED = 0b100;
 
 // A single tile
 class Tile {
   constructor() {
     this.adjacentMines = 0;
-    this.domNode = null;
-    this.hasMine = false;
-    this.isFlagged = false;
-    this.isRevealed = false;
+    this.domNode       = null;
+    this.hasMine       = false;
+    this.isFlagged     = false;
+    this.isRevealed    = false;
   }
 
   // Updates the associated DOM node
@@ -39,9 +39,9 @@ class Tile {
   }
 
   serialize() {
-    return (this.hasMine * HAS_MINE) +
-        (this.isFlagged * IS_FLAGGED) +
-        (this.isRevealed * IS_REVEALED);
+    return (this.hasMine && HAS_MINE) |
+        (this.isFlagged && IS_FLAGGED) |
+        (this.isRevealed && IS_REVEALED);
   }
 
   static deserialize(bits) {

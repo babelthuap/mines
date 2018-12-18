@@ -4,15 +4,15 @@ import {asCoordinates, createDiv, getLocation, modifyDom} from './js/util.js';
 
 (() => {
 
-const BOARD_EL = document.getElementById('board');
-const BOOM = createDiv('boom'); BOOM.innerText = 'BOOM';
-const DENSITY_INPUT = document.getElementById('density');
-const FLAGS_EL = document.getElementById('numFlags');
-const HEIGHT_INPUT = document.getElementById('height');
-const MINES_EL = document.getElementById('numMines');
+const BOARD_EL       = document.getElementById('board');
+const BOOM           = createDiv('boom'); BOOM.innerText = 'BOOM';
+const DENSITY_INPUT  = document.getElementById('density');
+const FLAGS_EL       = document.getElementById('numFlags');
+const HEIGHT_INPUT   = document.getElementById('height');
+const MINES_EL       = document.getElementById('numMines');
 const RESTART_BUTTON = document.getElementById('restart');
-const WIDTH_INPUT = document.getElementById('width');
-const WINNER = createDiv('winner'); WINNER.innerText = 'WINNER';
+const WIDTH_INPUT    = document.getElementById('width');
+const WINNER         = createDiv('winner'); WINNER.innerText = 'WINNER';
 
 
 /* SET UP GAME */

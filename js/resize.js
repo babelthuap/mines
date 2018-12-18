@@ -2,10 +2,10 @@ import {modifyDom} from './util.js';
 
 const H_MARGIN = 16;
 const V_MARGIN = 44;
-const SM_TILE = 19;
-const MD_TILE = 25;
-const LG_TILE = 37;
-const XL_TILE = 49;
+const SM_TILE  = 19;
+const MD_TILE  = 25;
+const LG_TILE  = 37;
+const XL_TILE  = 49;
 
 export default function resize(board, BOARD_EL) {
   let windowWidth = window.innerWidth;
