@@ -1,3 +1,16 @@
+const MASK_15 = 2 ** 15 - 1;
+
+// Turns a coordinate pair into a "Location"
+// a and b must be in [0, 2^15 - 1)
+export function asLocation(a, b) {
+  return (a << 15) | b;
+}
+
+// Turns a "Location" back into a coordinate pair
+export function asCoordinates(n) {
+  return [n >> 15, n & MASK_15];
+}
+
 // Creates a div with the given classes
 export function createDiv(...classNames) {
   const div = document.createElement('div');

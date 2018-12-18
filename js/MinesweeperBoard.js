@@ -1,4 +1,4 @@
-import {createDiv, modifyDom, rand, shuffle} from './util.js';
+import {asCoordinates, asLocation, createDiv, modifyDom, rand, shuffle} from './util.js';
 
 // Bit flags
 const HAS_MINE = 0b1;
@@ -65,6 +65,7 @@ export default class MinesweeperBoard {
     this.MINES_EL = MINES_EL;
 
     this.tilesLeftToReveal_ = null;
+    this.clues_ = new Set();
     this.numMines_ = 0;
     this.numFlags_ = 0;
     this.updateCounters();
@@ -143,10 +144,22 @@ export default class MinesweeperBoard {
     let width = this.getWidth();
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        if (this.grid_[y][x].hasMine) {
+        let tile = this.grid_[y][x];
+        if (tile.hasMine) {
           this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
             this.grid_[nbrY][nbrX].adjacentMines++;
           });
+        } else if (tile.isRevealed) {
+          let adjacentUnknown = 0;
+          this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
+            let neighbor = this.grid_[nbrY][nbrX];
+            if (!neighbor.isRevealed && !neighbor.hasFlag) {
+              adjacentUnknown++;
+            }
+          });
+          if (adjacentUnknown > 0) {
+            this.clues_.add(asLocation(y, x));
+          }
         }
       }
     }
@@ -211,6 +224,9 @@ export default class MinesweeperBoard {
     tile.isRevealed = true;
     this.tilesLeftToReveal_--;
     updatedLocations.push([y, x]);
+    if (tile.adjacentMines > 0) {
+      this.clues_.add(asLocation(y, x));
+    }
     
     if (tile.adjacentMines === 0 && !tile.hasMine) {
       this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
@@ -283,59 +299,71 @@ export default class MinesweeperBoard {
 
   aiFlagLocations() {
     let flaggableLocations = new Set();
-    for (let y = 0; y < this.getHeight(); y++) {
-      for (let x = 0; x < this.getWidth(); x++) {
-        let tile = this.grid_[y][x];
-        if (tile.isRevealed && tile.adjacentMines > 0) {
-          let adjacentFlags = 0;
-          let adjacentUnknown = 0;
+    for (let location of this.clues_) {
+      let [y, x] = asCoordinates(location);
+      let tile = this.grid_[y][x];
+      if (tile.adjacentMines === 0) {
+        this.clues_.delete(location);
+      } else {
+        let adjacentFlags = 0;
+        let adjacentUnknown = 0;
+        this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
+          let neighbor = this.grid_[nbrY][nbrX];
+          if (!neighbor.isRevealed) {
+            if (neighbor.isFlagged) {
+              adjacentFlags++;
+            } else {
+              adjacentUnknown++;
+            }
+          }
+        });
+        if (adjacentUnknown === 0) {
+          this.clues_.delete(location);
+        } else if (adjacentFlags + adjacentUnknown === tile.adjacentMines) {
           this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
             let neighbor = this.grid_[nbrY][nbrX];
-            if (!neighbor.isRevealed) {
-              if (neighbor.isFlagged) {
-                adjacentFlags++;
-              } else {
-                adjacentUnknown++;
-              }
+            if (!neighbor.isRevealed && !neighbor.isFlagged) {
+              flaggableLocations.add(asLocation(nbrY, nbrX));
             }
           });
-          if (adjacentFlags + adjacentUnknown === tile.adjacentMines) {
-            this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
-              let neighbor = this.grid_[nbrY][nbrX];
-              if (!neighbor.isRevealed && !neighbor.isFlagged) {
-                flaggableLocations.add(`${nbrY},${nbrX}`);
-              }
-            });
-          }
         }
       }
     }
     for (let location of flaggableLocations) {
-      this.flag(location.split(','));
+      this.flag(asCoordinates(location));
     }
     return flaggableLocations.size;
   }
 
   aiFindSaturatedLocations() {
-    let saturatedLocations = [];
-    for (let y = 0; y < this.getHeight(); y++) {
-      for (let x = 0; x < this.getWidth(); x++) {
-        let tile = this.grid_[y][x];
-        if (tile.isRevealed && tile.adjacentMines > 0) {
-          let adjacentFlags = 0;
-          this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
-            if (this.grid_[nbrY][nbrX].isFlagged) {
+    let saturatedLocations = new Set();
+    for (let location of this.clues_) {
+      let [y, x] = asCoordinates(location);
+      let tile = this.grid_[y][x];
+      if (tile.adjacentMines === 0) {
+        this.clues_.delete(location);
+      } else {
+        let adjacentFlags = 0;
+        let adjacentUnknown = 0;
+        this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
+          let neighbor = this.grid_[nbrY][nbrX];
+          if (!neighbor.isRevealed) {
+            if (neighbor.isFlagged) {
               adjacentFlags++;
+            } else {
+              adjacentUnknown++;
+            }
+          }
+        });
+        if (adjacentUnknown === 0) {
+          this.clues_.delete(location);
+        } else if (tile.adjacentMines === adjacentFlags) {
+          this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
+            let neighbor = this.grid_[nbrY][nbrX];
+            if (!neighbor.isRevealed && !neighbor.isFlagged) {
+              saturatedLocations.add(asLocation(nbrY, nbrX));
             }
           });
-          if (tile.adjacentMines === adjacentFlags) {
-            this.forEachNeighbor_(y, x, (nbrY, nbrX) => {
-              let neighbor = this.grid_[nbrY][nbrX];
-              if (!neighbor.isRevealed && !neighbor.isFlagged) {
-                saturatedLocations.push([nbrY, nbrX]);
-              }
-            });
-          }
         }
       }
     }

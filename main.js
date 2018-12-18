@@ -1,6 +1,6 @@
 import MinesweeperBoard from './js/MinesweeperBoard.js';
 import resize from './js/resize.js';
-import {createDiv, getLocation, modifyDom} from './js/util.js';
+import {asCoordinates, createDiv, getLocation, modifyDom} from './js/util.js';
 
 (() => {
 
@@ -78,27 +78,31 @@ function ai(recurse = true) {
   if (aiRevealMode) {
     let saturatedLocations = board.aiFindSaturatedLocations();
     for (let location of saturatedLocations) {
-      let gameOver = handleReveal(location);
+      let gameOver = handleReveal(asCoordinates(location));
       if (gameOver) {
-        return;
+        return true;
       }
     }
-    if (saturatedLocations.length === 0 && recurse) {
+    if (saturatedLocations.size === 0 && recurse) {
       ai(/* recurse= */ false);
     }
   } else {
     let numFlagged = board.aiFlagLocations();
-    if (numFlagged.length === 0 && recurse) {
+    if (numFlagged === 0 && recurse) {
       ai(/* recurse= */ false);
     }
   }
+  return false;
 }
 
 window.addEventListener('keydown', event => {
   if (event.keyCode === 82 /* 'r' */) {
     start();
   } else if (gameInProgress && event.keyCode === 65 /* 'a' */) {
-    ai();
+    let gameOver = ai();
+    if (!gameOver) {
+      localStorage.minesweeperBoard = board.serialize();
+    }
   }
 });
 
@@ -123,8 +127,6 @@ function handleReveal(location) {
       BOARD_EL.appendChild(win ? WINNER : BOOM);
     });
     delete localStorage.minesweeperBoard;
-  } else {
-    localStorage.minesweeperBoard = board.serialize();
   }
   return gameOver;
 }
@@ -153,7 +155,10 @@ BOARD_EL.addEventListener('mousedown', event => {
     if (event.altKey || event.ctrlKey || event.metaKey) {
       handleFlag(location);
     } else {
-      handleReveal(location);
+      let gameOver = handleReveal(location);
+      if (!gameOver) {
+        localStorage.minesweeperBoard = board.serialize();
+      }
     }
   }
 });
