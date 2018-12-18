@@ -1,6 +1,13 @@
-import MinesweeperBoard from './js/MinesweeperBoard.js';
 import resize from './js/resize.js';
-import {asCoordinates, createDiv, getLocation, modifyDom} from './js/util.js';
+import {MinesweeperBoard} from './js/MinesweeperBoard.js';
+import {
+  asCoordinates,
+  createDiv,
+  deserializeBoard,
+  getLocation,
+  modifyDom,
+  serializeBoard,
+} from './js/util.js';
 
 (() => {
 
@@ -51,7 +58,7 @@ if (localStorage.minesweeperParams) {
 }
 
 if (localStorage.minesweeperBoard) {
-  board = MinesweeperBoard.deserialize(
+  board = deserializeBoard(
       localStorage.minesweeperBoard, {BOARD_EL, FLAGS_EL, MINES_EL});
   isFirstMove = false;
   gameInProgress = true;
@@ -101,7 +108,7 @@ window.addEventListener('keydown', event => {
   } else if (gameInProgress && event.keyCode === 65 /* 'a' */) {
     let gameOver = ai();
     if (!gameOver) {
-      localStorage.minesweeperBoard = board.serialize();
+      localStorage.minesweeperBoard = serializeBoard(board);
     }
   }
 });
@@ -113,7 +120,7 @@ window.addEventListener('keydown', event => {
 function handleFlag(location) {
   board.flag(location);
   if (!isFirstMove) {
-    localStorage.minesweeperBoard = board.serialize();
+    localStorage.minesweeperBoard = serializeBoard(board);
   }
 }
 
@@ -157,7 +164,7 @@ BOARD_EL.addEventListener('mousedown', event => {
     } else {
       let gameOver = handleReveal(location);
       if (!gameOver) {
-        localStorage.minesweeperBoard = board.serialize();
+        localStorage.minesweeperBoard = serializeBoard(board);
       }
     }
   }

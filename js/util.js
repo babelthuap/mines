@@ -1,3 +1,6 @@
+import {MinesweeperBoard, Tile} from './MinesweeperBoard.js';
+
+// Lowest 15 bits
 const MASK_15 = 2 ** 15 - 1;
 
 // Turns a coordinate pair into a "Location"
@@ -53,4 +56,47 @@ export function shuffle(arr) {
     arr[i] = temp;
   }
   return arr;
+}
+
+// Bit flags for Tile serialization
+const HAS_MINE    = 0b001;
+const IS_FLAGGED  = 0b010;
+const IS_REVEALED = 0b100;
+
+function serializeTile(tile) {
+  return (tile.hasMine && HAS_MINE) |
+      (tile.isFlagged && IS_FLAGGED) |
+      (tile.isRevealed && IS_REVEALED);
+}
+
+function deserializeTile(bits) {
+  let tile = new Tile();
+  tile.hasMine = Boolean(bits & HAS_MINE);
+  tile.isFlagged = Boolean(bits & IS_FLAGGED);
+  tile.isRevealed = Boolean(bits & IS_REVEALED);
+  return tile;
+}
+
+export function serializeBoard(board) {
+  let arr = [
+    board.tilesLeftToReveal_,
+    board.numMines_,
+    board.numFlags_,
+    board.grid_.map(row => row.map(serializeTile).join('')),
+  ];
+  return JSON.stringify(arr);
+}
+
+export function deserializeBoard(json, elementRefs) {
+  let [tilesLeftToReveal, numMines, numFlags, grid] = JSON.parse(json);
+  let height = grid.length;
+  let width = grid[0].length;
+  let board = new MinesweeperBoard(height, width, elementRefs);
+  board.tilesLeftToReveal_ = tilesLeftToReveal;
+  board.numMines_ = numMines;
+  board.numFlags_ = numFlags;
+  board.grid_ = grid.map(row => row.split('').map(deserializeTile));
+  board.labelTiles_();
+  board.mapGridToDom_().then(() => board.render_());
+  return board;
 }
