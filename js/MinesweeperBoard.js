@@ -26,7 +26,7 @@ export class Tile {
     }
     if (revealMines) {
       if (this.hasMine) {
-        this.domNode.innerText = '*';
+        this.domNode.innerText = '💣';
       } else if (this.isFlagged) {
         this.domNode.innerText = '_';
       }
