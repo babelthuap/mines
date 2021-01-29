@@ -89,10 +89,18 @@ body {
   width: 12px;
 }
 
+.xs .tile.mine {
+  font-size: 7px;
+}
+
 .sm .tile {
   font-size: 15px;
   height: 18px;
   width: 18px;
+}
+
+.sm .tile.mine {
+  font-size: 12px;
 }
 
 .md .tile {
@@ -101,16 +109,28 @@ body {
   width: 24px;
 }
 
+.md .tile.mine {
+  font-size: 16px;
+}
+
 .lg .tile {
   font-size: 30px;
   height: 36px;
   width: 36px;
 }
 
+.lg .tile.mine {
+  font-size: 26px;
+}
+
 .xl .tile {
   font-size: 40px;
   height: 48px;
   width: 48px;
+}
+
+.xl .tile.mine {
+  font-size: 36px;
 }
 
 .tile.m1 {
